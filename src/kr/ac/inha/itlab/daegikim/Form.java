@@ -5,12 +5,16 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
+import java.util.Random;
 import java.util.Vector;
 
 public class Form extends JFrame implements ActionListener,Runnable {
     private JButton button = null;
     private JTable table = null;
     private Connection conn = null;
+    private int r = 0;
+    private int g = 0;
+    private int b = 0;
 
     public Form()
     {
@@ -89,6 +93,7 @@ public class Form extends JFrame implements ActionListener,Runnable {
 
             table = new JTable(buildTableModel(rs));
 
+            setLookAndFeel(button);
             con.add(setLookAndFeel(table.getTableHeader()), BorderLayout.PAGE_START);
             con.add(setLookAndFeel(table), BorderLayout.CENTER);
 
@@ -103,8 +108,8 @@ public class Form extends JFrame implements ActionListener,Runnable {
 
     public JComponent setLookAndFeel(JComponent com){
         com.setBackground(Color.BLACK);
-        com.setForeground(Color.GREEN);
-        com.setBorder(BorderFactory.createLineBorder(Color.GREEN));
+        com.setForeground(new Color(r,g,b));
+        com.setBorder(BorderFactory.createLineBorder(new Color(r,g,b)));
         com.setFont(new Font("Malgun Gothic", Font.PLAIN, 12));
 
         return com;
@@ -133,6 +138,9 @@ public class Form extends JFrame implements ActionListener,Runnable {
     @Override
     public void run() {
         while(true){
+            r = new Random().nextInt(255)+1;
+            g = new Random().nextInt(255)+1;
+            b = new Random().nextInt(255)+1;
             getData();
             System.gc();
             try {
