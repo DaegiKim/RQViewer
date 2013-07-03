@@ -9,7 +9,11 @@ import java.util.Random;
 import java.util.Vector;
 
 public class Form extends JFrame implements ActionListener,Runnable {
-    private JButton button = null;
+    private volatile boolean isStop = false;
+    private boolean isDebug = true;
+    private JButton btnRefresh = null;
+    private JButton btnStopOrResume = null;
+    private JPanel panSouth = null;
     private JTable table = null;
     private Connection conn = null;
     private int r = 0;
@@ -21,20 +25,32 @@ public class Form extends JFrame implements ActionListener,Runnable {
         super("RQViewer");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        String hostname = JOptionPane.showInputDialog(null,"Enter your host name: ", "", 1);
-        String database = JOptionPane.showInputDialog(null,"Enter your database name: ", "", 1);
-        String username = JOptionPane.showInputDialog(null,"Enter your user name: ", "", 1);
-        String password = JOptionPane.showInputDialog(null,"Enter your password: ", "", 1);
+        if(!isDebug){
+            String hostname = JOptionPane.showInputDialog(null,"Enter your host name: ", "", 1);
+            String database = JOptionPane.showInputDialog(null,"Enter your database name: ", "", 1);
+            String username = JOptionPane.showInputDialog(null,"Enter your user name: ", "", 1);
+            String password = JOptionPane.showInputDialog(null,"Enter your password: ", "", 1);
+            conn = getConnection("jdbc:sqlserver://"+hostname+":1433;databaseName="+database+";user="+username+";password="+password+";");
+        }
+        else{
 
-        conn = getConnection(hostname, database, username, password);
+        }
 
         Container con = this.getContentPane();
         con.setLayout(new BorderLayout());
-        button = new JButton("Refresh");
+        btnRefresh = new JButton("Refresh");
+        btnStopOrResume = new JButton("Stop");
+        panSouth = new JPanel();
         table = new JTable();
-        con.add(setLookAndFeel(button), BorderLayout.PAGE_END);
-        con.add(table, BorderLayout.CENTER);
-        button.addActionListener(this);
+
+
+        panSouth.add(setLookAndFeel(btnRefresh));
+        panSouth.add(setLookAndFeel(btnStopOrResume));
+
+        con.add(setLookAndFeel(panSouth), BorderLayout.PAGE_END);
+        con.add(setLookAndFeel(table), BorderLayout.CENTER);
+        btnRefresh.addActionListener(this);
+        btnStopOrResume.addActionListener(this);
 
         this.setUndecorated(true);
         this.setOpacity(0.75f);
@@ -43,18 +59,18 @@ public class Form extends JFrame implements ActionListener,Runnable {
 
         setBounds(0,0,1600,180);
         setVisible(true); // make frame visible
-        ComponentMover cm = new ComponentMover(this, button);
+        new ComponentMover(this, this);
     }
 
     /**
      * 데이터베이스 연결 객체 반환하는 함수
      * @return Connection
      */
-    public Connection getConnection(String hostname, String database, String username, String password) {
+    public Connection getConnection(String connectionString) {
         Connection conn = null;
         try {
             Class.forName( "com.microsoft.sqlserver.jdbc.SQLServerDriver" );
-            conn = DriverManager.getConnection("jdbc:sqlserver://"+hostname+":1433;databaseName="+database+";user="+username+";password="+password+";");
+            conn = DriverManager.getConnection(connectionString);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (SQLException e) {
@@ -66,7 +82,14 @@ public class Form extends JFrame implements ActionListener,Runnable {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        getData();
+        if(e.getSource()==btnRefresh){
+            getData();
+        }
+        else if(e.getSource()== btnStopOrResume){
+            isStop = !isStop;
+            btnStopOrResume.setText(isStop?"Resume":"Stop");
+        }
+
     }
 
     public boolean getData(){
@@ -93,12 +116,10 @@ public class Form extends JFrame implements ActionListener,Runnable {
 
             table = new JTable(buildTableModel(rs));
 
-            setLookAndFeel(button);
+            setLookAndFeel(btnRefresh);
+            setLookAndFeel(btnStopOrResume);
             con.add(setLookAndFeel(table.getTableHeader()), BorderLayout.PAGE_START);
             con.add(setLookAndFeel(table), BorderLayout.CENTER);
-
-            revalidate();
-            repaint();
         } catch (SQLException e1) {
             e1.printStackTrace();
             return false;
@@ -107,10 +128,17 @@ public class Form extends JFrame implements ActionListener,Runnable {
     }
 
     public JComponent setLookAndFeel(JComponent com){
+        if(com.equals(table.getTableHeader())||com.equals(btnRefresh)||com.equals(btnStopOrResume)){
+            com.setFont(new Font("Malgun Gothic", Font.BOLD, 14));
+        }
+        else{
+            com.setFont(new Font("Malgun Gothic", Font.PLAIN, 12));
+        }
+
         com.setBackground(Color.BLACK);
         com.setForeground(new Color(r,g,b));
         com.setBorder(BorderFactory.createLineBorder(new Color(r,g,b)));
-        com.setFont(new Font("Malgun Gothic", Font.PLAIN, 12));
+
 
         return com;
     }
@@ -138,15 +166,17 @@ public class Form extends JFrame implements ActionListener,Runnable {
     @Override
     public void run() {
         while(true){
-            r = new Random().nextInt(255)+1;
-            g = new Random().nextInt(255)+1;
-            b = new Random().nextInt(255)+1;
-            getData();
-            System.gc();
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            while(isStop == false){
+                r = new Random().nextInt(255)+1;
+                g = new Random().nextInt(255)+1;
+                b = new Random().nextInt(255)+1;
+                getData();
+                System.gc();
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
             }
         }
     }
