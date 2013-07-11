@@ -31,7 +31,6 @@ public class Form extends JFrame implements ActionListener,Runnable {
             conn = getConnection("jdbc:sqlserver://"+hostname+":1433;databaseName="+database+";user="+username+";password="+password+";");
         }
         else{
-
         }
 
         Container con = this.getContentPane();
@@ -166,13 +165,12 @@ public class Form extends JFrame implements ActionListener,Runnable {
 
     public void Alarm(){
         try {
-            panSouth.setBackground(Color.ORANGE);
-            Thread.sleep(100);
-            panSouth.setBackground(Color.BLACK);
-            Thread.sleep(100);
-            panSouth.setBackground(Color.ORANGE);
-            Thread.sleep(100);
-            panSouth.setBackground(Color.BLACK);
+            for(int i=0; i<4; i++){
+                Thread.sleep(50);
+                panSouth.setBackground(Color.ORANGE);
+                Thread.sleep(50);
+                panSouth.setBackground(Color.BLACK);
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
