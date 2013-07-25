@@ -31,6 +31,7 @@ public class Form extends JFrame implements ActionListener,Runnable {
             conn = getConnection("jdbc:sqlserver://"+hostname+":1433;databaseName="+database+";user="+username+";password="+password+";");
         }
         else{
+            conn = getConnection("jdbc:sqlserver://NJ1SQL002Q:1433;databaseName=UMSRisk;user=RiskNetUser;password=R!skNetUser10;");
         }
 
         Container con = this.getContentPane();
@@ -91,19 +92,20 @@ public class Form extends JFrame implements ActionListener,Runnable {
     public boolean getData(){
         try {
             PreparedStatement pstmt = conn.prepareStatement("SELECT \n" +
-                    "\treq.session_id,\n" +
-                    "\treq.request_id,\n" +
-                    "\tsqltext.text,\n" +
-                    "\treq.start_time,\n" +
-                    "\treq.status,\n" +
-                    "\treq.command,\n" +
-                    "\treq.database_id,\n" +
-                    "\treq.user_id,\n" +
-                    "\treq.cpu_time,\n" +
-                    "\treq.total_elapsed_time\n" +
+                    "req.session_id,\n" +
+                    "con.client_net_address,\n" +
+                    "con.last_read,\n" +
+                    "con.last_write,\n" +
+                    "sqltext.text,\n" +
+                    "req.start_time,\n" +
+                    "req.status,\n" +
+                    "req.command,\n" +
+                    "req.cpu_time,\n" +
+                    "req.total_elapsed_time\n" +
                     "FROM sys.dm_exec_requests req\n" +
+                    "LEFT JOIN sys.dm_exec_connections con ON req.session_id = con.session_id\n" +
                     "CROSS APPLY sys.dm_exec_sql_text(sql_handle) AS sqltext\n" +
-                    "WHERE session_id > 50 AND session_id <> @@spid");
+                    "WHERE req.session_id > 50 AND req.session_id <> @@spid");
             ResultSet rs = pstmt.executeQuery();
 
             Container con = this.getContentPane();
