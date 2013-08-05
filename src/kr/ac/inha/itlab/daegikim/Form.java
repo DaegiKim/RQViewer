@@ -31,7 +31,7 @@ public class Form extends JFrame implements ActionListener,Runnable {
             conn = getConnection("jdbc:sqlserver://"+hostname+":1433;databaseName="+database+";user="+username+";password="+password+";");
         }
         else{
-            conn = getConnection("jdbc:sqlserver://NJ1SQL002Q:1433;databaseName=UMSRisk;user=RiskNetUser;password=R!skNetUser10;");
+            conn = getConnection("");
         }
 
         Container con = this.getContentPane();
