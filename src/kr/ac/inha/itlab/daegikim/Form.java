@@ -31,7 +31,7 @@ public class Form extends JFrame implements ActionListener,Runnable {
             conn = getConnection("jdbc:sqlserver://"+hostname+":1433;databaseName="+database+";user="+username+";password="+password+";");
         }
         else{
-            conn = getConnection("jdbc:sqlserver://NJ1SQL002Q:1433;databaseName=UMSRisk;user=RiskNetUser;password=R!skNetUser10;");
+            conn = getConnection("");
         }
 
         Container con = this.getContentPane();
@@ -54,7 +54,9 @@ public class Form extends JFrame implements ActionListener,Runnable {
         this.setAlwaysOnTop(true);
         this.setLocationByPlatform(true);
 
-        setBounds(0,0,1600,120);
+        double width = Toolkit.getDefaultToolkit().getScreenSize().getWidth();
+        setBounds(0,0,(int)width,120);
+
         setVisible(true); // make frame visible
         new ComponentMover(this, this);
     }
